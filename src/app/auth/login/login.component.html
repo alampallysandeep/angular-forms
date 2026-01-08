@@ -1,3 +1,46 @@
+<div class="button-form">
+  <button type="button" class="button" (click)="showHideForm('templateForm')">Template Driven Form</button>
+  <button type="button" class="button" (click)="showHideForm('reactiveForm')">Reactive Form</button>
+</div>
+
+@if(templateDrivenForm()){
+<form #form="ngForm" (ngSubmit)="onSubmit(form)">
+  <h2>Login</h2>
+
+  <div class="control-row">
+    <div class="control no-margin">
+      <label for="email">Email</label>
+      <input id="email" type="email" name="email" ngModel required email #email="ngModel" />
+      @if(email.invalid && email.touched && email.dirty){
+      <p class="control-error">
+        Invalid emain address entered
+      </p>
+      }
+    </div>
+
+    <div class="control no-margin">
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" ngModel required minlength="6" #password="ngModel" />
+      @if(password.invalid && password.touched && password.dirty){
+      <p class="control-error">
+        Invalid password entered - must be at least 6 characters
+      </p>
+      }
+    </div>
+    <div class="control no-margin radio-label">
+      <label for="male">Male</label>
+      <input id="male" type="radio" name="gender" value="Male" ngModel required #gender="ngModel" />
+      <label for="female">Female</label>
+      <input id="female" type="radio" name="gender" value="Female" ngModel required #gender="ngModel" />
+    </div>
+
+    <button class="button">Login</button>
+  </div>
+  @if(form.form.valid) {
+  <p>{{form.value| json }}</p>
+  }
+</form>
+}@else if(reactiveForm()) {
 <form>
   <h2>Login</h2>
 
@@ -15,3 +58,4 @@
     <button class="button">Login</button>
   </div>
 </form>
+}

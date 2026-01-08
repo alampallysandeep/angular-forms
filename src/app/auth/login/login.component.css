@@ -3,9 +3,18 @@
 }
 
 .control {
-  flex: 1;
+  width: 100%;
 }
 
 button {
   padding: 0.6rem 1.75rem;
+}
+.control.no-margin.radio-label {
+    display:flex;
+}
+.button-form{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
 }
