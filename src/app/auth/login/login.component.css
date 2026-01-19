@@ -18,3 +18,7 @@ button {
   align-items: center;
   gap: 12px;
 }
+button.active{
+  background-color:#319890;
+  border: 2px solid #fff;
+}

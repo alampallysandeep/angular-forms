@@ -1,20 +1,48 @@
-import { JsonPipe } from '@angular/common';
-import { afterNextRender, Component, DestroyRef, inject, signal, viewChild } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms';
+import { JsonPipe, NgClass } from '@angular/common';
+import { afterNextRender, Component, DestroyRef, inject, OnInit, signal, viewChild } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
 import { debounceTime } from 'rxjs';
+import { emailIsUnique, mustContainQuestionMark } from '../../form-element-validator';
+
+// function mustContainQuestionMark(control:AbstractControl){
+//   if(control.value.includes('?')){
+//     return null;
+//   }
+
+//   return {doesNotContainQuestionMark: true}
+// }
 
 @Component({
   selector: 'app-login',
-  imports:[FormsModule,JsonPipe],
+  imports: [FormsModule, JsonPipe, NgClass, ReactiveFormsModule],
   standalone: true,
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
+  //Template Driven Approach
   private form = viewChild.required<NgForm>('form')
   private destroyRef = inject(DestroyRef)
-  templateDrivenForm = signal<boolean>(false);
+
+  // Reactive form Approach
+  formReactive = new FormGroup({
+    email: new FormControl('', {
+      validators:[Validators.required,Validators.email],
+      asyncValidators:[emailIsUnique]
+    }),
+    password: new FormControl('',{
+      validators:[Validators.required,Validators.minLength(6),mustContainQuestionMark],
+    }),
+    gender: new FormControl('',{
+      validators:[Validators.required]
+    })
+  })
+
+
+  templateDrivenForm = signal<boolean>(true);
   reactiveForm = signal<boolean>(false);
+
+
   constructor(){
     if(this.templateDrivenForm()){
         afterNextRender(()=>{
@@ -40,6 +68,27 @@ export class LoginComponent {
       })
     }
   }
+
+  ngOnInit() {
+      const savedReactiveFormValues = window.localStorage.getItem('reactive-login-form')
+      if(savedReactiveFormValues){
+        const loadedForm = JSON.parse(savedReactiveFormValues);
+        this.formReactive.patchValue({
+          email: loadedForm.email,
+          password:loadedForm.password,
+          gender:loadedForm.gender
+        })
+      }
+{}    const reactiveSubscription= this.formReactive.valueChanges.pipe(debounceTime(500)).subscribe({
+      next: (value) => {
+        window.localStorage.setItem('reactive-login-form',JSON.stringify({email:value.email,password:value.password,gender:value.gender}))
+      }
+    })
+
+    this.destroyRef.onDestroy(()=>{
+      reactiveSubscription.unsubscribe()
+    })
+  }
   onSubmit(formData: NgForm){
     if(formData.form.valid){
       const emailValue = formData.form.value.email;
@@ -55,6 +104,24 @@ export class LoginComponent {
       console.log("form is invalid")
     }
   }
+
+  
+  onReactiveFormSubmit(){
+    console.log(this.formReactive)
+    const enteredEmail = this.formReactive.value.email;
+    const enteredPassword = this.formReactive.value.password;
+    const genderValue = this.formReactive.value.gender;
+    console.log(enteredEmail,enteredPassword,genderValue)
+  }
+
+  get emailIsInvalid(){
+    return this.formReactive.controls.email.invalid && this.formReactive.controls.email.touched && this.formReactive.controls.email.dirty
+  }
+
+  get passwordIsInvalid(){
+    return this.formReactive.controls.password.invalid && this.formReactive.controls.password.touched && this.formReactive.controls.password.dirty
+  }
+
   showHideForm(type: string){
     if(type == 'templateForm'){
       this.templateDrivenForm.set(true);

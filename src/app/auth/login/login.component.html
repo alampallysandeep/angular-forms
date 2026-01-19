@@ -1,6 +1,6 @@
 <div class="button-form">
-  <button type="button" class="button" (click)="showHideForm('templateForm')">Template Driven Form</button>
-  <button type="button" class="button" (click)="showHideForm('reactiveForm')">Reactive Form</button>
+  <button type="button" class="button" [ngClass]="templateDrivenForm() ? 'active': ''" (click)="showHideForm('templateForm')">Template Driven Form</button>
+  <button type="button" class="button" [ngClass]="reactiveForm() ? 'active': ''" (click)="showHideForm('reactiveForm')">Reactive Form</button>
 </div>
 
 @if(templateDrivenForm()){
@@ -13,7 +13,7 @@
       <input id="email" type="email" name="email" ngModel required email #email="ngModel" />
       @if(email.invalid && email.touched && email.dirty){
       <p class="control-error">
-        Invalid emain address entered
+        Invalid email address entered
       </p>
       }
     </div>
@@ -41,21 +41,36 @@
   }
 </form>
 }@else if(reactiveForm()) {
-<form>
+<form [formGroup]="formReactive" (ngSubmit)="onReactiveFormSubmit()">
   <h2>Login</h2>
 
   <div class="control-row">
     <div class="control no-margin">
       <label for="email">Email</label>
-      <input id="email" type="email" />
+      <input id="email" type="email" [formControl]="formReactive.controls.email"/>
+      @if(emailIsInvalid){
+        <p class="control-error"> Invalid Email address entered</p>
+      }
     </div>
 
     <div class="control no-margin">
       <label for="password">Password</label>
-      <input id="password" type="password" />
+      <input id="password" type="password" formControlName="password"/>
+      @if(passwordIsInvalid){
+        <p class="control-error"> Please enter a valid password (must be at least 6 characters long and contain a question mark)</p>
+      }
+    </div>
+    <div class="control no-margin radio-label">
+      <label for="male">Male</label>
+      <input id="male" type="radio" name="gender" value="Male"  formControlName="gender"/>
+      <label for="female">Female</label>
+      <input id="female" type="radio" name="gender" value="Female" formControlName="gender"/>
     </div>
 
     <button class="button">Login</button>
   </div>
+  @if(formReactive.valid){
+    {{formReactive.value | json}}
+  }
 </form>
 }
